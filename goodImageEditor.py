@@ -1,5 +1,6 @@
 import sys
 import re
+import os
 
 def getstr(line, cursor = -1):
 	str_ = ""
@@ -38,25 +39,31 @@ elif len(sys.argv) == 3:
 
 cursor = [0, 0]
 h4ck3rMode = False
+message = False
 
 while True:
+	os.system("cls||clear")
 	printimg(image)
-	inp = input().lower().split(" ")
+
+	if message:
+		print("\n" + message)
+		message = False
+	else: print()
+
+	inp = input("> ").lower().split(" ")
 	if len(inp) == 0:
 		continue
 	elif len(inp) == 1:
 		if inp[0] == "save":
 			if filename is None:
-				print("I don't know where to save. Please use \"save filename.ppm\"")
+				message = "I don't know where to save. Please use \"save filename.ppm\""
 			else:
 				with open(filename, "w") as savefile:
 					savefile.write("P3\n" + str(width) + " " + str(height) + "\n255\n" + "\n".join(" ".join(str(i) for i in pixel) for line in image for pixel in line)+"\n")
 					print(f"Saved to {filename}")
-					savefile.close()
 			continue
 		elif inp[0] == "quit":
-			print("Are you sure?")
-			if input().lower() == "yes":
+			if input("\nAre you sure? (y/n) ").lower() in ["yes", "y"]:
 				exit()
 		elif h4ck3rMode:
 			if inp[0] == "red++":
@@ -73,10 +80,14 @@ while True:
 				image[cursor[0]][cursor[1]][2] = max(0, image[cursor[0]][cursor[1]][2]-1)
 	else:
 		if inp[0] == "paint" and not h4ck3rMode:
-			color = int(inp[1], base=16)
-			image[cursor[0]][cursor[1]][0] = color // 256**2
-			image[cursor[0]][cursor[1]][1] = color // 256 % 256
-			image[cursor[0]][cursor[1]][2] = color % 256
+			try:
+				color = int(inp[1], base=16)
+				image[cursor[0]][cursor[1]][0] = color // 256**2
+				image[cursor[0]][cursor[1]][1] = color // 256 % 256
+				image[cursor[0]][cursor[1]][2] = color % 256
+			except ValueError:
+				message = "Invalid HEX code for the color."
+
 		elif inp[0] == "move":
 			if inp[1] == "down" and cursor[0] != height-1:
 				cursor[0] += 1
@@ -88,15 +99,14 @@ while True:
 				cursor[1] -= 1
 		elif inp[0] == "toggle" and inp[1] == "h4ck3rmode":
 			if h4ck3rMode:
-				h4ck3rMode = not h4ck3rMode
+				h4ck3rMode = False
+				message = "h4ck3rMode toggled off."
 			else:
-				print("ARE YOU SURE YOU CAN HANDLE SUCH EFFICIENCY??")
-				if (input().lower() == "yes"):
-					h4ck3rMode = not h4ck3rMode
+				if input("ARE YOU SURE YOU CAN HANDLE SUCH EFFICIENCY?? ").lower() in ["yes", "y"]:
+					h4ck3rMode = True
+					message = "h4ck3rMode toggled on."
 			continue
 		elif inp[0] == "save":
 			with open(inp[1], "w") as savefile:
 				savefile.write("P3\n" + str(width) + " " + str(height) + "\n255\n" + "\n".join(" ".join(str(i) for i in pixel) for line in image for pixel in line)+"\n")
 				print(f"Saved to {inp[1]}")
-				savefile.close()
-		
